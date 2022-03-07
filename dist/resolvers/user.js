@@ -68,7 +68,14 @@ UserResponse = __decorate([
     type_graphql_1.ObjectType()
 ], UserResponse);
 let UserResolver = class UserResolver {
-    register(options, { em }) {
+    me({ req, em }) {
+        if (!req.session.userId) {
+            return null;
+        }
+        const user = em.findOne(Users_1.User, { id: req.session.userId });
+        return user;
+    }
+    register(options, { em, req }) {
         return __awaiter(this, void 0, void 0, function* () {
             if (options.username.length <= 2) {
                 return {
@@ -104,17 +111,18 @@ let UserResolver = class UserResolver {
                         errors: [
                             {
                                 field: "username",
-                                message: "username is already taken"
-                            }
-                        ]
+                                message: "username is already taken",
+                            },
+                        ],
                     };
                 }
                 console.error(err);
             }
+            req.session.userId = user.id;
             return { user };
         });
     }
-    login(options, { em }) {
+    login(options, { em, req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield em.findOne(Users_1.User, { username: options.username });
             if (!user) {
@@ -138,12 +146,20 @@ let UserResolver = class UserResolver {
                     ],
                 };
             }
+            req.session.userId = user.id;
             return {
                 user,
             };
         });
     }
 };
+__decorate([
+    type_graphql_1.Query(() => Users_1.User, { nullable: true }),
+    __param(0, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], UserResolver.prototype, "me", null);
 __decorate([
     type_graphql_1.Mutation(() => UserResponse),
     __param(0, type_graphql_1.Arg("options")),

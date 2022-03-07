@@ -41,10 +41,20 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+  @Query(() => User, { nullable: true })
+  me(@Ctx() { req, em }: MyContext) {
+    if (!req.session.userId) {
+      return null;
+    }
+
+    const user = em.findOne(User, { id: req.session.userId });
+    return user;
+  }
+
   @Mutation(() => UserResponse)
   async register(
     @Arg("options") options: UsernamePasswordInput,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     if (options.username.length <= 2) {
       return {
@@ -75,34 +85,34 @@ export class UserResolver {
       password: hashedPassword,
     });
 
-    try{
+    try {
+      await em.persistAndFlush(user);
+    } catch (err) {
+      if (err.code === "23505") {
+        // || err.detail.includes("already exists")){
+        return {
+          errors: [
+            {
+              field: "username",
+              message: "username is already taken",
+            },
+          ],
+        };
+      }
 
-        await em.persistAndFlush(user);
+      console.error(err);
     }
-    catch(err){
 
-        if(err.code === "23505"){ // || err.detail.includes("already exists")){
-            return {
-                errors: [
-                    {
-                        field: "username",
-                        message: "username is already taken"
-                    }
-                ]
-            }
-        }
+    // store user id session
+    req.session.userId = user.id
 
-        console.error(err)
-    }
-    
-    return {user};
-
+    return { user };
   }
 
   @Mutation(() => UserResponse)
   async login(
     @Arg("options") options: UsernamePasswordInput,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     const user = await em.findOne(User, { username: options.username });
 
@@ -129,6 +139,9 @@ export class UserResolver {
         ],
       };
     }
+
+    req.session.userId = user.id;
+
     return {
       user,
     };

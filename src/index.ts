@@ -17,7 +17,6 @@ const main = async () => {
   try {
     const orm = await MikroORM.init(microConfig);
     orm.getMigrator().up();
-
     const app = express();
 
     const RedisStore = connectRedis(session);
@@ -37,6 +36,7 @@ const main = async () => {
           sameSite: "lax",
           secure: __prod__,
         },
+        saveUninitialized: false,
         secret: "beep boop",
         resave: false,
       })
