@@ -12,10 +12,20 @@ import { createClient } from "redis";
 import session from "express-session";
 import connectRedis from "connect-redis";
 import cors from "cors";
+import { sendEmail } from "./utils/sendEmail";
+import { User } from "./entities/Users";
 
 const main = async () => {
   try {
+    // sendEmail("bob@bob.com", "hello")
+
+    
     const orm = await MikroORM.init(microConfig);
+
+
+    // await orm.em.nativeDelete(User , {})
+
+
     orm.getMigrator().up();
     const app = express();
 
