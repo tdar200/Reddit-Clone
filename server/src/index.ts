@@ -24,13 +24,15 @@ const main = async () => {
     username: "postgres",
     password: "postgres",
     logging: true,
-    synchronize: true,
+    synchronize: false,
     entities: [Post, User]
   })
   // sendEmail("bob@bob.com", "hello")
 
 
   // await orm.em.nativeDelete(User , {})
+
+  await Post.delete({})
 
   const app = express();
 
