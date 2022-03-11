@@ -37,13 +37,9 @@ export class PostResolver {
   @Mutation(() => Post)
   @UseMiddleware(isAuth)
   async createPost(
-    @Arg("inputs") input: PostInput,
+    @Arg("input") input: PostInput,
     @Ctx() { req }: MyContext
   ): Promise<Post> {
-    if (!req.session.userId) {
-      throw new Error("not authenticated");
-    }
-
     return Post.create({ ...input, creatorId: req.session.userId }).save();
   }
 
