@@ -16,8 +16,8 @@ const Users_1 = require("./Users");
 let Post = class Post extends typeorm_1.BaseEntity {
 };
 __decorate([
-    type_graphql_1.Field(() => type_graphql_1.Int),
-    typeorm_1.PrimaryGeneratedColumn({ type: "number" }),
+    type_graphql_1.Field(),
+    typeorm_1.PrimaryGeneratedColumn(),
     __metadata("design:type", Number)
 ], Post.prototype, "id", void 0);
 __decorate([

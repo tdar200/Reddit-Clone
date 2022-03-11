@@ -1,7 +1,5 @@
 import "reflect-metadata";
-
 import { COOKIE_NAME, __prod__ } from "./constants";
-
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
@@ -12,27 +10,23 @@ import Redis from "ioredis";
 import session from "express-session";
 import connectRedis from "connect-redis";
 import cors from "cors";
-import {createConnection} from "typeorm"
+import { createConnection } from "typeorm";
 import { User } from "./entities/Users";
 import { Post } from "./entities/Post";
 
 const main = async () => {
-
   const conn = await createConnection({
-    type:"postgres",
+    type: "postgres",
     database: "reddit",
     username: "postgres",
     password: "postgres",
     logging: true,
     synchronize: false,
-    entities: [Post, User]
-  })
+    entities: [Post, User],
+  });
   // sendEmail("bob@bob.com", "hello")
-
-
   // await orm.em.nativeDelete(User , {})
-
-  await Post.delete({})
+  // await Post.delete({})
 
   const app = express();
 
@@ -71,7 +65,7 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }) => ({  req, res, redis }),
+    context: ({ req, res }) => ({ req, res, redis }),
   });
 
   apolloServer.applyMiddleware({ app, cors: false });
