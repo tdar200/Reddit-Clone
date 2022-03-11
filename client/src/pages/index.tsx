@@ -4,13 +4,17 @@ import { NavBar } from "../components/NavBar";
 import { usePostsQuery } from "../generated/graphql";
 import { createUrqlClient } from "../utils/createUrqlClient";
 import NextLink from "next/link";
+import { Layout } from "../components/Layout";
 
 const Index = () => {
-  const [{ data }] = usePostsQuery();
+  const [{ data }] = usePostsQuery({
+    variables: {
+      limit: 10,
+    }
+  });
 
   return (
-    <div>
-      <NavBar />
+    <Layout>
       <NextLink href='/create-post'>
         <Link>Create Post</Link>
       </NextLink>
@@ -20,7 +24,7 @@ const Index = () => {
       ) : (
         data.posts.map((p) => <div key={p.id}> </div>)
       )}
-    </div>
+    </Layout>
   );
 };
 
