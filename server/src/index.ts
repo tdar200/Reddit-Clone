@@ -13,20 +13,24 @@ import cors from "cors";
 import { createConnection } from "typeorm";
 import { User } from "./entities/Users";
 import { Post } from "./entities/Post";
+import path from "path"
 
 const main = async () => {
   const conn = await createConnection({
     type: "postgres",
     database: "reddit",
     username: "postgres",
-    password: "postgres",
+    password: "Saywalla7",
     logging: true,
     synchronize: false,
+    migrations: [path.join(__dirname, "./migrations/*")],
     entities: [Post, User],
   });
   // sendEmail("bob@bob.com", "hello")
   // await orm.em.nativeDelete(User , {})
   // await Post.delete({})
+
+  await conn.runMigrations()
 
   const app = express();
 

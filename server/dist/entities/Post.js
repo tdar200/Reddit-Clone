@@ -22,7 +22,7 @@ __decorate([
 ], Post.prototype, "id", void 0);
 __decorate([
     type_graphql_1.Field(),
-    typeorm_1.Column({ type: "text" }),
+    typeorm_1.Column(),
     __metadata("design:type", String)
 ], Post.prototype, "title", void 0);
 __decorate([
@@ -37,7 +37,7 @@ __decorate([
 ], Post.prototype, "points", void 0);
 __decorate([
     type_graphql_1.Field(),
-    typeorm_1.Column(),
+    typeorm_1.Column({ type: "int" }),
     __metadata("design:type", Number)
 ], Post.prototype, "creatorId", void 0);
 __decorate([
