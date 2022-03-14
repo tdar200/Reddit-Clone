@@ -14,6 +14,7 @@ import { createConnection } from "typeorm";
 import { User } from "./entities/Users";
 import { Post } from "./entities/Post";
 import path from "path"
+import { Updoot } from "./entities/Updoot";
 
 const main = async () => {
   const conn = await createConnection({
@@ -24,7 +25,7 @@ const main = async () => {
     logging: true,
     synchronize: false,
     migrations: [path.join(__dirname, "./migrations/*")],
-    entities: [Post, User],
+    entities: [Post, User, Updoot],
   });
   // sendEmail("bob@bob.com", "hello")
   // await orm.em.nativeDelete(User , {})

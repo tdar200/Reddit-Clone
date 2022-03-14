@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Post = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
+const Updoot_1 = require("./Updoot");
 const Users_1 = require("./Users");
 let Post = class Post extends typeorm_1.BaseEntity {
 };
@@ -37,7 +38,7 @@ __decorate([
 ], Post.prototype, "points", void 0);
 __decorate([
     type_graphql_1.Field(),
-    typeorm_1.Column({ type: "int" }),
+    typeorm_1.Column(),
     __metadata("design:type", Number)
 ], Post.prototype, "creatorId", void 0);
 __decorate([
@@ -45,6 +46,10 @@ __decorate([
     typeorm_1.ManyToOne(() => Users_1.User, (user) => user.posts),
     __metadata("design:type", Users_1.User)
 ], Post.prototype, "creator", void 0);
+__decorate([
+    typeorm_1.OneToMany(() => Updoot_1.Updoot, (updoot) => updoot.post),
+    __metadata("design:type", Array)
+], Post.prototype, "updoots", void 0);
 __decorate([
     type_graphql_1.Field(() => String),
     typeorm_1.CreateDateColumn({ type: "date" }),
