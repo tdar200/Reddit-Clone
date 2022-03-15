@@ -16,6 +16,7 @@ import NextLink from "next/link";
 import { Layout } from "../components/Layout";
 import { useState } from "react";
 import { IconButton } from "@chakra-ui/react";
+import { UpdootSection } from "../components/UpdootSection";
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -46,7 +47,7 @@ const Index = () => {
         <Stack spacing={8}>
           {data!.posts.posts.map((p) => (
             <Flex key={p.id} p={5} shadow='md' borderWidth='1px'>
-            
+            <UpdootSection post={p} />
               <Box>
                 <Heading fontSize='xl'> {p.title} </Heading>
                 <Text>postedy by{p.creator.username}</Text>
