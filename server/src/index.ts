@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import "dotenv-safe/config";
 import { COOKIE_NAME, __prod__ } from "./constants";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
@@ -13,17 +14,17 @@ import cors from "cors";
 import { createConnection } from "typeorm";
 import { User } from "./entities/Users";
 import { Post } from "./entities/Post";
-import path from "path"
+import path from "path";
 import { Updoot } from "./entities/Updoot";
+import { createUserLoader } from "./utils/createUserLoader";
+import { createUpdootLoader } from "./utils/createUpdootLoader";
 
 const main = async () => {
   const conn = await createConnection({
     type: "postgres",
-    database: "reddit",
-    username: "postgres",
-    password: "Saywalla7",
+    url: process.env.DATABASE_URL,
     logging: true,
-    synchronize: false,
+    // synchronize: false,
     migrations: [path.join(__dirname, "./migrations/*")],
     entities: [Post, User, Updoot],
   });
@@ -31,16 +32,16 @@ const main = async () => {
   // await orm.em.nativeDelete(User , {})
   // await Post.delete({})
 
-  await conn.runMigrations()
+  await conn.runMigrations();
 
   const app = express();
 
   const RedisStore = connectRedis(session);
-  const redis = new Redis();
-
+  const redis = new Redis(process.env.REDIS_URL);
+  app.set("proxy", 1)
   app.use(
     cors({
-      origin: "http://localhost:3000",
+      origin: process.env.CORS_ORIGIN,
       credentials: true,
     })
   );
@@ -58,9 +59,10 @@ const main = async () => {
         httpOnly: true,
         sameSite: "lax",
         secure: __prod__,
+        domain: __prod__ ? '.codeponder.com' : undefined,
       },
       saveUninitialized: false,
-      secret: "beep boop",
+      secret: process.env.SESSION_SECRET,
       resave: false,
     })
   );
@@ -70,12 +72,18 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }) => ({ req, res, redis }),
+    context: ({ req, res }) => ({
+      req,
+      res,
+      redis,
+      userLoader: createUserLoader(),
+      updootLoader: createUpdootLoader(),
+    }),
   });
 
   apolloServer.applyMiddleware({ app, cors: false });
 
-  app.listen(4000, () => {
+  app.listen(parseInt(process.env.PORT), () => {
     console.log("server started on port 4000");
   });
 };

@@ -1,36 +1,33 @@
+import { cacheExchange, Resolver, Cache } from "@urql/exchange-graphcache";
 import {
   dedupExchange,
   Exchange,
   fetchExchange,
-  gql,
   stringifyVariables,
 } from "urql";
+import { pipe, tap } from "wonka";
 import {
-  LogoutMutation,
-  MeQuery,
-  MeDocument,
   LoginMutation,
+  LogoutMutation,
+  MeDocument,
+  MeQuery,
   RegisterMutation,
-  VoteMutation,
   VoteMutationVariables,
   DeletePostMutationVariables,
 } from "../generated/graphql";
-import { cacheExchange, Resolver } from "@urql/exchange-graphcache";
 import { betterUpdateQuery } from "./betterUpdateQuery";
-import { pipe, tap } from "wonka";
-import router from "next/router";
+import Router from "next/router";
+import gql from "graphql-tag";
 import { isServer } from "./isServer";
 
-export const errorExchange: Exchange =
+const errorExchange: Exchange =
   ({ forward }) =>
   (ops$) => {
     return pipe(
       forward(ops$),
       tap(({ error }) => {
-        if (error) {
-          if (error?.message.includes("not authenticated")) {
-            router.replace("/login");
-          }
+        if (error?.message.includes("not authenticated")) {
+          Router.replace("/login");
         }
       })
     );
@@ -72,24 +69,22 @@ const cursorPagination = (): Resolver => {
   };
 };
 
-// function invalidateAllPosts(cache: Cache) {
-//   const allFields = cache.inspectFields("Query");
-//   const fieldInfos = allFields.filter((info) => info.fieldName === "posts");
-//   fieldInfos.forEach((fi) => {
-//     cache.invalidate("Query", "posts", fi.arguments || {});
-//   });
-// }
+function invalidateAllPosts(cache: Cache) {
+  const allFields = cache.inspectFields("Query");
+  const fieldInfos = allFields.filter((info) => info.fieldName === "posts");
+  fieldInfos.forEach((fi) => {
+    cache.invalidate("Query", "posts", fi.arguments || {});
+  });
+}
 
 export const createUrqlClient = (ssrExchange: any, ctx: any) => {
   let cookie = "";
-
   if (isServer()) {
-    cookie = ctx?.req?.headers?.cookie
+    cookie = ctx?.req?.headers?.cookie;
   }
 
   return {
-    url: "http://localhost:4000/graphql",
-
+    url: process.env.NEXT_PUBLIC_API_URL as string,
     fetchOptions: {
       credentials: "include" as const,
       headers: cookie
@@ -109,13 +104,14 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
             posts: cursorPagination(),
           },
         },
-
         updates: {
           Mutation: {
             deletePost: (_result, args, cache, info) => {
-              cache.invalidate({__typename:"Post", id: (args as DeletePostMutationVariables).id})
+              cache.invalidate({
+                __typename: "Post",
+                id: (args as DeletePostMutationVariables).id,
+              });
             },
-
             vote: (_result, args, cache, info) => {
               const { postId, value } = args as VoteMutationVariables;
               const data = cache.readFragment(
@@ -135,7 +131,6 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                 }
                 const newPoints =
                   (data.points as number) + (!data.voteStatus ? 1 : 2) * value;
-
                 cache.writeFragment(
                   gql`
                     fragment __ on Post {
@@ -143,22 +138,13 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                       voteStatus
                     }
                   `,
-                  { id: 1, points: newPoints, voteStatus: value } as any
+                  { id: postId, points: newPoints, voteStatus: value } as any
                 );
               }
             },
-
             createPost: (_result, args, cache, info) => {
-              const allFields = cache.inspectFields("Query");
-              const fieldInfos = allFields.filter(
-                (info) => info.fieldName === "posts"
-              );
-
-              fieldInfos.forEach((fi) => {
-                cache.invalidate("Query", "posts", fi.arguments || {});
-              });
+              invalidateAllPosts(cache);
             },
-
             logout: (_result, args, cache, info) => {
               betterUpdateQuery<LogoutMutation, MeQuery>(
                 cache,
@@ -167,7 +153,6 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                 () => ({ me: null })
               );
             },
-
             login: (_result, args, cache, info) => {
               betterUpdateQuery<LoginMutation, MeQuery>(
                 cache,
@@ -183,8 +168,8 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                   }
                 }
               );
+              invalidateAllPosts(cache);
             },
-
             register: (_result, args, cache, info) => {
               betterUpdateQuery<RegisterMutation, MeQuery>(
                 cache,

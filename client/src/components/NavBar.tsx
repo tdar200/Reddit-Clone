@@ -3,10 +3,14 @@ import React from "react";
 import NextLink from "next/link";
 import { useLogoutMutation, useMeQuery } from "../generated/graphql";
 import { Button } from "@chakra-ui/react";
+import {useRouter} from "next/router"
 
 interface NavBarProps {}
 
 export const NavBar: React.FC<NavBarProps> = ({}) => {
+
+  const router = useRouter()
+
   const [{ fetching: logoutFetching }, logout] = useLogoutMutation();
 
   const [{ data, fetching }] = useMeQuery({});
@@ -40,6 +44,7 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
          <Button
            onClick={async () => {
              await logout();
+             router.reload()
             
            }}
            isLoading={logoutFetching}

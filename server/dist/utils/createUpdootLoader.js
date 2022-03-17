@@ -8,16 +8,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FakePosts1647062737398 = void 0;
-class FakePosts1647062737398 {
-    up(queryRunner) {
-        return __awaiter(this, void 0, void 0, function* () {
-        });
-    }
-    down(_) {
-        return __awaiter(this, void 0, void 0, function* () { });
-    }
-}
-exports.FakePosts1647062737398 = FakePosts1647062737398;
-//# sourceMappingURL=1647062737398-FakePosts.js.map
+exports.createUpdootLoader = void 0;
+const dataloader_1 = __importDefault(require("dataloader"));
+const Updoot_1 = require("../entities/Updoot");
+exports.createUpdootLoader = () => new dataloader_1.default((keys) => __awaiter(void 0, void 0, void 0, function* () {
+    const updoots = yield Updoot_1.Updoot.findByIds(keys);
+    const updootIdsToUpdoot = {};
+    updoots.forEach((updoot) => {
+        updootIdsToUpdoot[`${updoot.userId}|${updoot.postId}`] = updoot;
+    });
+    return keys.map((key) => updootIdsToUpdoot[`${key.userId}|${key.postId}`]);
+}));
+//# sourceMappingURL=createUpdootLoader.js.map
